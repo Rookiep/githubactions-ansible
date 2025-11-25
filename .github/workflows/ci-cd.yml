@@ -1,0 +1,30 @@
+name: CI-CD Pipeline (Local Minikube Build)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Point Docker to Minikube
+        run: |
+          eval $(minikube docker-env)
+          docker info
+
+      - name: Build Docker image inside Minikube
+        run: |
+            docker build -t sample-app:latest ./app
+            docker images
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Deploy using Ansible
+        run: ansible-playbook ansible/deploy.yaml -i ansible/inventory
